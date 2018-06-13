@@ -1,11 +1,51 @@
 package com.framgia.nguyenson.music_19.data.model;
 
-public class Song {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Song implements Parcelable {
     private int mId;
     private String mArtworkUrl;
     private String mDowloadUrl;
     private String mDuration;
     private String mArtist;
+    private String mAvatarUrl;
+    private String mUri;
+
+    public Song() {
+    }
+
+    protected Song(Parcel in) {
+        mId = in.readInt();
+        mArtworkUrl = in.readString();
+        mDowloadUrl = in.readString();
+        mDuration = in.readString();
+        mArtist = in.readString();
+        mAvatarUrl = in.readString();
+        mTitle = in.readString();
+        mUri = in.readString();
+    }
+
+    public static final Creator<Song> CREATOR = new Creator<Song>() {
+        @Override
+        public Song createFromParcel(Parcel in) {
+            return new Song(in);
+        }
+
+        @Override
+        public Song[] newArray(int size) {
+            return new Song[size];
+        }
+    };
+
+    public String getAvatarUrl() {
+        return mAvatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        mAvatarUrl = avatarUrl;
+    }
+
     private String mTitle;
 
     public int getId() {
@@ -56,7 +96,32 @@ public class Song {
         mTitle = title;
     }
 
-    static class SongBuilder {
+    public String getUri() {
+        return mUri;
+    }
+
+    public void setUri(String uri) {
+        mUri = uri;
+    }
+
+    @Override
+    public int describeContents() {
+        return this.hashCode();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(mId);
+        dest.writeString(mArtworkUrl);
+        dest.writeString(mDowloadUrl);
+        dest.writeString(mDuration);
+        dest.writeString(mArtist);
+        dest.writeString(mAvatarUrl);
+        dest.writeString(mTitle);
+        dest.writeString(mUri);
+    }
+
+    public static class SongBuilder {
         private Song mSong;
 
         public SongBuilder() {
@@ -91,6 +156,20 @@ public class Song {
         public SongBuilder title(String title) {
             mSong.setTitle(title);
             return this;
+        }
+
+        public SongBuilder avatar(String avatarUrl) {
+            mSong.setAvatarUrl(avatarUrl);
+            return this;
+        }
+
+        public SongBuilder uri(String uri) {
+            mSong.setUri(uri);
+            return this;
+        }
+
+        public Song build() {
+            return mSong;
         }
     }
 }
