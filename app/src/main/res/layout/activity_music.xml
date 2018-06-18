@@ -118,7 +118,7 @@
             android:id="@+id/image_shuffle_music"
             android:layout_width="@dimen/image_repeat_width"
             android:layout_height="@dimen/image_repeat_width"
-            android:background="@drawable/ic_shuffle_white"
+            android:src="@drawable/ic_shuffle_white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/image_previous_music"
             app:layout_constraintHorizontal_bias="0.5"
@@ -140,7 +140,7 @@
             android:id="@+id/image_play_music"
             android:layout_width="@dimen/image_play_music_width"
             android:layout_height="@dimen/image_play_music_width"
-            android:background="@drawable/ic_pause_song"
+            android:src="@drawable/ic_pause_song"
             app:layout_constraintEnd_toStartOf="@+id/image_next_music"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/image_previous_music" />
@@ -160,11 +160,13 @@
             android:id="@+id/image_repeat"
             android:layout_width="@dimen/image_repeat_width"
             android:layout_height="@dimen/image_repeat_width"
-            android:background="@drawable/ic_repeat_white"
+            android:src="@drawable/ic_repeat_white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/image_next_music"
             app:layout_constraintTop_toTopOf="parent" />
     </android.support.constraint.ConstraintLayout>
+    <include
+        layout="@layout/bottom_sheet_playlist"/>
 </android.support.constraint.ConstraintLayout>

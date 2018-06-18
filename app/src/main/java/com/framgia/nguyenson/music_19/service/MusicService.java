@@ -44,6 +44,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public static final String ACTION_PLAY = "ACTION_PLAY";
     private static final String EXTRA_LIST_SONG = "EXTRA_LIST_SONG";
     private static final String EXTRA_POSITION = "EXTRA_POSITION";
+    private static final String EXTRA_CODE = "EXTRA_CODE";
     private static final String ACTION_PLAY_NOTIFI = "com.framgia.music.action.ACTION_PLAY_NOTIFI";
     private static final String ACTION_PREVIOUS_NOTIFI = "com.framgia.music.action.ACTION_PREVIOUS_NOTIFI";
     private static final String ACTION_NEXT_NOTIFI = "com.framgia.music.action.ACTION_NEXT_NOTIFI";
@@ -63,12 +64,16 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private OnListener mOnListener;
     private Notification mNotification;
     private RemoteViews mRemoteViews;
+    private String mCode = Constants.MUSIC_ONLINE;
+    private SharedPreferences.Editor mEditor;
 
-    public static Intent getInstance(Context context, int position, List<Song> songList) {
+    public static Intent getInstance(Context context, int position, List<Song> songList,
+                                     String code) {
         Intent intent = new Intent(context, MusicService.class);
         intent.setAction(ACTION_PLAY);
         intent.putParcelableArrayListExtra(EXTRA_LIST_SONG, (ArrayList<? extends Parcelable>) songList);
         intent.putExtra(EXTRA_POSITION, position);
+        intent.putExtra(EXTRA_CODE, code);
         return intent;
     }
 
@@ -95,9 +100,20 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 Bundle bundle = intent.getExtras();
                 mSongs = bundle.getParcelableArrayList(EXTRA_LIST_SONG);
                 int position = bundle.getInt(EXTRA_POSITION);
-                if (mSongs.get(mIndex).getId() != mSongs.get(position).getId()) {
-                    mStateMedia = MediaState.IDLE;
-                    mIndex = position;
+                String code = bundle.getString(EXTRA_CODE);
+                if (mCode.equals(code)) {
+                    if (mSongs.get(mIndex).getId() != mSongs.get(position).getId()) {
+                        mStateMedia = MediaState.IDLE;
+                        mIndex = position;
+                    }
+                } else if (!mCode.equals(code)) {
+                    mIndex = 0;
+                    mMediaPlayer.reset();
+                    mCode = code;
+                    if (mSongs.get(mIndex).getId() != mSongs.get(position).getId()) {
+                        mStateMedia = MediaState.IDLE;
+                        mIndex = position;
+                    }
                 }
                 playSong();
                 break;
@@ -105,10 +121,17 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 previous();
                 break;
             case ACTION_PLAY_NOTIFI:
+                mEditor = mSharedPreferences.edit();
                 if (mStateMedia == MediaState.PLAYING) {
+                    mCheckPlay = false;
+                    mEditor.putBoolean(Constants.PREF_PLAY, mCheckPlay);
+                    mEditor.apply();
                     pause();
                     mOnListener.updateStatePlay(false);
-                } else {
+                } else if (mStateMedia == MediaState.PAUSE) {
+                    mCheckPlay = true;
+                    mEditor.putBoolean(Constants.PREF_PLAY, mCheckPlay);
+                    mEditor.apply();
                     playSong();
                     mOnListener.updateStatePlay(true);
                 }
@@ -155,7 +178,10 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         if (mStateMedia == MediaState.IDLE || mStateMedia == MediaState.COMPLETE) {
             mMediaPlayer.reset();
             try {
-                mMediaPlayer.setDataSource(Utils.createUrlStreamMusic(mSongs.get(mIndex).getUri()));
+                if (mCode.equals(Constants.MUSIC_OFFLINE))
+                    mMediaPlayer.setDataSource(mSongs.get(mIndex).getUri());
+                else
+                    mMediaPlayer.setDataSource(Utils.createUrlStreamMusic(mSongs.get(mIndex).getUri()));
                 mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 mMediaPlayer.prepareAsync();
                 mMediaPlayer.setOnPreparedListener(this);
@@ -178,16 +204,16 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public void pause() {
-        mMediaPlayer.pause();
         mStateMedia = MediaState.PAUSE;
-        updateNotification();
+        mMediaPlayer.pause();
+        if (mRemoteViews != null) updateNotification();
     }
 
     public void next() {
         if (mIndex == mSongs.size() - 1) mIndex = 0;
         else mIndex++;
         mStateMedia = MediaState.IDLE;
-        updateNotification();
+        if (mRemoteViews != null) updateNotification();
         playSong();
         mOnListener.onListenerSong(mSongs.get(mIndex));
         mOnListener.updateStatePlay(true);
@@ -197,7 +223,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         if (mIndex == 0) mIndex = mSongs.size() - 1;
         else mIndex--;
         mStateMedia = MediaState.IDLE;
-        updateNotification();
+        if (mRemoteViews != null) updateNotification();
         playSong();
         mOnListener.onListenerSong(mSongs.get(mIndex));
         mOnListener.updateStatePlay(true);
@@ -258,6 +284,10 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         startForeground(ID_NOTIFICATION, mNotification);
     }
 
+    public String getCode() {
+        return mCode;
+    }
+
     private void nextMusicNotifi() {
         Intent intentActionNext = new Intent();
         intentActionNext.setAction(ACTION_NEXT_NOTIFI);
@@ -310,6 +340,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
         startForeground(ID_NOTIFICATION, mNotification);
     }
+
 
     public interface OnListener {
         void onListenerSong(Song song);

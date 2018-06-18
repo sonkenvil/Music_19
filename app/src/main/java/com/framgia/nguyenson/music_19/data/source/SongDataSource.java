@@ -7,12 +7,23 @@ import java.util.List;
 public interface SongDataSource {
 
     interface RemoteDataSource {
-        void getSongs(int position, OnFetchDataListener<Song> listener);
+        void getSongs(String genre, int limit, int offset,
+                      OnFetchDataListener<Song> listener);
     }
 
     interface OnFetchDataListener<T> {
-        void onFetchDataSuccess(int position, List<T> list);
+        void onFetchDataSuccess(List<T> list);
 
         void onFetchDataError(String message);
+    }
+
+    interface LocalDataSource {
+        void getSongs(OnGetDataListener<Song> listener);
+    }
+
+    interface OnGetDataListener<T> {
+        void onGetDataSuccess(List<T> list);
+
+        void onGetDataError(String message);
     }
 }

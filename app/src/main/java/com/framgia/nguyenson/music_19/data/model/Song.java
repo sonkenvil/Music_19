@@ -7,7 +7,7 @@ public class Song implements Parcelable {
     private int mId;
     private String mArtworkUrl;
     private String mDowloadUrl;
-    private String mDuration;
+    private int mDuration;
     private String mArtist;
     private String mAvatarUrl;
     private String mUri;
@@ -19,7 +19,7 @@ public class Song implements Parcelable {
         mId = in.readInt();
         mArtworkUrl = in.readString();
         mDowloadUrl = in.readString();
-        mDuration = in.readString();
+        mDuration = in.readInt();
         mArtist = in.readString();
         mAvatarUrl = in.readString();
         mTitle = in.readString();
@@ -72,11 +72,11 @@ public class Song implements Parcelable {
         mDowloadUrl = dowloadUrl;
     }
 
-    public String getDuration() {
+    public int getDuration() {
         return mDuration;
     }
 
-    public void setDuration(String duration) {
+    public void setDuration(int duration) {
         mDuration = duration;
     }
 
@@ -114,7 +114,7 @@ public class Song implements Parcelable {
         dest.writeInt(mId);
         dest.writeString(mArtworkUrl);
         dest.writeString(mDowloadUrl);
-        dest.writeString(mDuration);
+        dest.writeInt(mDuration);
         dest.writeString(mArtist);
         dest.writeString(mAvatarUrl);
         dest.writeString(mTitle);
@@ -143,7 +143,7 @@ public class Song implements Parcelable {
             return this;
         }
 
-        public SongBuilder duration(String duration) {
+        public SongBuilder duration(int duration) {
             mSong.setDuration(duration);
             return this;
         }

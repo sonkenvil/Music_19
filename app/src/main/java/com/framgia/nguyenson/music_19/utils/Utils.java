@@ -4,13 +4,13 @@ import com.framgia.nguyenson.music_19.BuildConfig;
 
 public class Utils {
     public static String createUrlContent(String genre, int limit, int offset) {
-        return String.format("%s%s%s&%s=%s&%s=%d&%s=%d", Constants.URL_BASE,
-                Constants.CONTENT_URL, genre, Constants.CLIENT_ID,
-                BuildConfig.API_KEY, Constants.LIMIT, limit, Constants.OFFSET, offset);
+        return String.format("%s%s%s&%s=%s&%s=%d&%s=%d", Constants.GenreBase.URL_BASE,
+                Constants.GenreBase.CONTENT_URL, genre, Constants.GenreBase.CLIENT_ID,
+                BuildConfig.API_KEY, Constants.GenreBase.LIMIT, limit, Constants.GenreBase.OFFSET, offset);
     }
 
     public static String createUrlStreamMusic(String uri) {
-        return String.format("%s%s=%s", uri, Constants.STREAM, BuildConfig.API_KEY);
+        return String.format("%s%s=%s", uri, Constants.GenreBase.STREAM, BuildConfig.API_KEY);
     }
 
     public static class Api {
@@ -23,9 +23,6 @@ public class Utils {
         public static final String DURATION = "duration";
         public static final String TITLE = "title";
         public static final String URI = "uri";
-        public static final String POSITION = "position";
-        public static final String KEY_LIST = "key_list";
-        public static final String BUNDLE = "bundle";
     }
 
     public static String milliSecondsToTimer(long milliseconds) {

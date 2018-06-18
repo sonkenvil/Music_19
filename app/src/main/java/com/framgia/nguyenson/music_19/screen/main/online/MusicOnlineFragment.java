@@ -38,8 +38,9 @@ public class MusicOnlineFragment extends Fragment {
 
     private void setupViewPager() {
         PagerAdapter pagerAdapter = new PagerAdapter(getActivity().getSupportFragmentManager());
-        for (int i = 0; i < Constants.GENRE.length; i++) {
-            pagerAdapter.addFragment(GenresFragment.newInstance(Constants.GENRE[i]), Constants.GENRE[i]);
+        for (int i = 0; i < Constants.GenreBase.GENRE.length; i++) {
+            pagerAdapter.addFragment(GenresFragment.newInstance(Constants.GenreBase.GENRE[i]),
+                    Constants.GenreBase.GENRE[i]);
         }
         mViewPager.setAdapter(pagerAdapter);
     }

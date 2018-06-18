@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_music_online"
+            android:icon="@drawable/ic_home"
+            android:title="@string/music_online" />
+        <item
+            android:id="@+id/nav_offline"
+            android:icon="@drawable/ic_library_music"
+            android:title="@string/offline" />
+        <item
+            android:id="@+id/nav_favourite"
+            android:icon="@drawable/ic_favorite"
+            android:title="@string/favourite" />
+    </group>
+</menu>

@@ -5,6 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -34,7 +37,8 @@ import static com.framgia.nguyenson.music_19.utils.Constants.EXTRA_STATE;
 import static com.framgia.nguyenson.music_19.utils.Constants.PREF_PLAY;
 
 public class MusicActivity extends AppCompatActivity implements View.OnClickListener,
-        SeekBar.OnSeekBarChangeListener, MusicService.OnListener, SongAdapter.ItemClickListener {
+        SeekBar.OnSeekBarChangeListener, MusicService.OnListener, SongAdapter.ItemClickListener,
+        MusicContract.View {
     private MusicService mMusicService;
     private boolean mBound = false;
     private ImageView mImageBack;
@@ -56,6 +60,7 @@ public class MusicActivity extends AppCompatActivity implements View.OnClickList
     private BottomSheetBehavior mBottomSheetBehavior;
     private SongAdapter mSongAdapter;
     private RecyclerView mRecyclerView;
+    private MusicPresenter mPresenter;
 
     public static Intent getInstance(Context context) {
         Intent intent = new Intent(context, MusicActivity.class);
@@ -68,6 +73,7 @@ public class MusicActivity extends AppCompatActivity implements View.OnClickList
         setContentView(R.layout.activity_music);
         initViews();
         setListener();
+        initPresenter();
         initSetingMusic();
         mBottomSheetBehavior = BottomSheetBehavior.from(initViewBottomSheet());
     }
@@ -100,6 +106,7 @@ public class MusicActivity extends AppCompatActivity implements View.OnClickList
             if (mMusicService.getStateMedia() == MediaState.PLAYING)
                 mImagePlaySong.setImageResource(R.drawable.ic_pause_song);
             else mImagePlaySong.setImageResource(R.drawable.ic_play_song);
+            mPresenter.checkDowload(mMusicService.getSong(), mMusicService.getCode());
         }
 
         @Override
@@ -112,6 +119,11 @@ public class MusicActivity extends AppCompatActivity implements View.OnClickList
         String link = mMusicService.getSong().getArtworkUrl();
         if (link == null) link = mMusicService.getSong().getAvatarUrl();
         return link;
+    }
+
+    private void initPresenter() {
+        mPresenter = new MusicPresenter();
+        mPresenter.setView(this);
     }
 
     private String getUriSong(Song song) {
@@ -187,10 +199,19 @@ public class MusicActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void loadImageSong(String uri) {
-        Glide.with(this)
-                .load(uri)
-                .error(R.drawable.image_default_music)
-                .into(mCircleImageSong);
+        String code = mMusicService.getCode();
+        if (code.equals(Constants.MUSIC_ONLINE)) {
+            Glide.with(this)
+                    .load(uri)
+                    .error(R.drawable.image_default_music)
+                    .into(mCircleImageSong);
+        } else {
+            android.media.MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(mMusicService.getSong().getUri());
+            byte[] data = retriever.getEmbeddedPicture();
+            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+            mCircleImageSong.setImageBitmap(bitmap);
+        }
     }
 
     @Override
@@ -203,6 +224,7 @@ public class MusicActivity extends AppCompatActivity implements View.OnClickList
                 startActivity(i);
                 break;
             case R.id.image_download:
+                mPresenter.dowloadSong(mMusicService.getSong(), this);
                 break;
             case R.id.image_favourite:
                 break;
@@ -289,8 +311,10 @@ public class MusicActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        mSeekBarSong.setProgress(progress);
-        mProgress = progress;
+        if (mMusicService.getMediaPlayer() != null && fromUser) {
+            mSeekBarSong.setProgress(progress);
+            mMusicService.getMediaPlayer().seekTo(progress);
+        }
     }
 
     @Override
@@ -299,8 +323,6 @@ public class MusicActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-        if (mMusicService.getMediaPlayer().isPlaying())
-            mMusicService.playCurrentTime(mProgress);
     }
 
     @Override
@@ -346,8 +368,18 @@ public class MusicActivity extends AppCompatActivity implements View.OnClickList
     public void onCLickItem(int position) {
         if (mMusicService.getSong().getId() == mMusicService.getSongs().get(position).getId())
             return;
-        startService(MusicService.getInstance(this, position, mMusicService.getSongs()));
+        startService(MusicService.getInstance(this, position, mMusicService.getSongs(), mMusicService.getCode()));
         mTextTitle.setText(mMusicService.getSongs().get(position).getTitle());
         loadImageSong(getUriSong(mMusicService.getSongs().get(position)));
+    }
+
+    @Override
+    public void showDowload() {
+        mImageDowload.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void hideDowload() {
+        mImageDowload.setVisibility(View.INVISIBLE);
     }
 }

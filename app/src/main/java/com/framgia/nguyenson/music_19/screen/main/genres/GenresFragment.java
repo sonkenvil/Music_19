@@ -1,11 +1,13 @@
 package com.framgia.nguyenson.music_19.screen.main.genres;
 
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,7 +66,8 @@ public class GenresFragment extends Fragment implements GenresContract.View,
         initView();
         initRecycler();
         initPresenter();
-        mPresenter.loadMusic(mGenre, Constants.DEFAULT_LIMIT, Constants.DEFAULT_OFFSET);
+        mPresenter.loadMusic(mGenre, Constants.GenreBase.DEFAULT_LIMIT,
+                Constants.GenreBase.DEFAULT_OFFSET);
     }
 
     public void initRecycler() {
@@ -119,8 +122,18 @@ public class GenresFragment extends Fragment implements GenresContract.View,
 
     @Override
     public void onClickItem(View view, int position) {
-        getContext().startActivity(MusicActivity.getInstance(getActivity()));
+        startActivity(MusicActivity.getInstance(getActivity()));
         getContext().startService(MusicService.getInstance(getActivity(),
-                position, mSongList));
+                position, mSongList,Constants.MUSIC_ONLINE));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 }
